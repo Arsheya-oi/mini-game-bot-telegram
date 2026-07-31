@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل مدیریت ربات</title>
+<link rel="icon" type="image/png" href="/static/1.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10131a;
+    --surface: #171b24;
+    --surface-2: #1d222d;
+    --border: #2a3040;
+    --text: #eceef3;
+    --text-muted: #8991a6;
+    --text-dim: #565d70;
+    --jade: #5fd9a6;
+    --coral: #ec7360;
+    --blue: #7c9bff;
+    --amber: #e8b34f;
+    --font-body: 'Vazirmatn', Tahoma, sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  body {
+    font-family: var(--font-body);
+    background:
+      radial-gradient(1100px 500px at 15% -10%, rgba(124,155,255,0.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(95,217,166,0.06), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 28px 20px 60px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 200vh; /* برای تست اسکرول */
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ---------- Three.js container (گوشه پایین راست) ---------- */
+  #three-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 160px;
+    height: 160px;
+    z-index: 1000;
+    pointer-events: auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    border: 1px solid var(--border);
+    background: transparent;
+  }
+  #three-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto;
+  }
+
+  /* ---------- بقیه استایل‌ها مانند قبل ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 22px;
+  }
+
+  .title-block h1 {
+    font-size: 21px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .title-block .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 16px 8px 12px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .rps-indicator {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+  }
+  .rps-indicator.spin { animation: rps-cycle 1.8s steps(1) infinite; }
+  @keyframes rps-cycle {
+    0%   { content: "✊"; }
+  }
+
+  .status-pill .sep { color: var(--text-dim); }
+  .status-pill .meta { color: var(--text-muted); }
+  #status_text { color: var(--text); font-weight: 600; }
+  #status_text.on { color: var(--jade); }
+  #status_text.off { color: var(--coral); }
+  #status_text.pending { color: var(--amber); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 14px;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    background: rgba(124,155,255,0.1);
+    border: 1px solid rgba(124,155,255,0.25);
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .card h2 {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .card .desc {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin: 8px 0 0;
+  }
+
+  .core-card .desc { margin-top: 2px; margin-bottom: 14px; }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  form { margin: 0; display: inline; }
+
+  button, .btn-link {
+    font-family: var(--font-body);
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 15px;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease, background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+
+  button:hover, .btn-link:hover { border-color: var(--blue); background: #202637; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, .btn-link:focus-visible, input:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  button.primary { border-color: rgba(95,217,166,0.4); }
+  button.primary:hover { border-color: var(--jade); background: rgba(95,217,166,0.08); }
+  button.danger { border-color: rgba(236,115,96,0.35); }
+  button.danger:hover { border-color: var(--coral); background: rgba(236,115,96,0.08); }
+
+  input[type=file] {
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+  }
+  input[type=file]::file-selector-button {
+    font-family: var(--font-body);
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  input[type=submit] {
+    font-family: var(--font-body);
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 15px;
+    font-size: 13.5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  input[type=submit]:hover { border-color: var(--blue); background: #202637; }
+
+  .upload-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .flash {
+    background: rgba(124,155,255,0.08);
+    border: 1px solid rgba(124,155,255,0.3);
+    border-radius: 10px;
+    padding: 11px 15px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .console-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  #log {
+    background: #0a0c11;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    height: 300px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    color: #b7bdcc;
+    direction: ltr;
+    text-align: left;
+  }
+  #log::-webkit-scrollbar { width: 8px; }
+  #log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+  footer {
+    margin-top: 26px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 480px) {
+    header { flex-direction: column; align-items: flex-start; }
+    #three-container { width: 120px; height: 120px; bottom: 10px; right: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Three.js Container (گوشه) -->
+<div id="three-container"></div>
+
+<div class="wrap">
+  <header>
+    <div class="title-block">
+      <div class="eyebrow">rps‑bot · control console</div>
+      <h1>🎮 پنل مدیریت ربات بازی‌ها</h1>
+    </div>
+    <div class="status-pill">
+      <span class="rps-indicator" id="rps_icon">✊</span>
+      <span id="status_text" class="off">در حال بررسی...</span>
+      <span class="sep">·</span>
+      <span class="meta">آپ‌تایم: <span id="uptime">—</span></span>
+    </div>
+  </header>
+
+  <div class="card core-card">
+    <div class="card-head"><span class="tag">core</span><h2>کنترل بات</h2></div>
+    <p class="desc">روشن، خاموش یا ری‌استارتش کن — یا برو تو پنل فعالیت خودِ بازی‌ها.</p>
+    <div class="btn-row">
+      <form method="post" action="/start"><button type="submit" class="primary">🚀 روشن کن</button></form>
+      <form method="post" action="/stop"><button type="submit" class="danger">⏹ خاموش کن</button></form>
+      <form method="post" action="/restart"><button type="submit">🔁 ری‌استارت</button></form>
+      <a href="{{ activity_url }}" target="_blank" class="btn-link">📊 پنل فعالیت بازی‌ها</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="tag">deploy</span><h2>آپلود نسخه‌ی جدید فایل بات</h2></div>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <div class="upload-row">
+        <input type="file" name="file" accept=".py" required>
+        <input type="submit" value="⬆️ آپلود و اعمال">
+      </div>
+    </form>
+    <p class="desc">نسخه‌ی قبلی خودش تو پوشه‌ی backups بکاپ گرفته می‌شه. اگه بات روشن باشه، بعد از آپلود خودکار با نسخه‌ی جدید ری‌استارت می‌شه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="tag">deps</span><h2>پیش‌نیازهای بات</h2></div>
+    <form method="post" action="/install"><button type="submit">📦 نصب/به‌روزرسانی پیش‌نیازها</button></form>
+    <p class="desc">فقط لازمه یه بار بزنی (یا هروقت پکیجی کم بود).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="tag">net</span><h2>تست سرعت اتصال به تلگرام</h2></div>
+    <form method="post" action="/latency"><button type="submit">🌐 تست سرعت اتصال</button></form>
+    <p class="desc">اگه دکمه‌های بازی دیر آپدیت می‌شن، اول همینو بزن — نتیجه تو لاگ پایین صفحه میاد. اگه عدد بالا بود (خصوصاً اگه اصلاً وصل نشد)، مشکل از کدِ بات نیست، از مسیر شبکه‌ست.</p>
+  </div>
+
+  {% if flash_msg %}
+  <div class="flash">{{ flash_msg }}</div>
+  {% endif %}
+
+  <div class="card">
+    <div class="console-head">
+      <div class="card-head" style="margin-bottom:0;"><span class="tag">log</span><h2>لاگ زنده</h2></div>
+    </div>
+    <div id="log">در حال بارگذاری...</div>
+  </div>
+
+  <footer>127.0.0.1:8099</footer>
+</div>
+
+<script>
+const HANDS = ["✊", "✋", "✌️"];
+let handFrame = 0;
+let handTimer = null;
+
+function setRunningVisual(running, pending) {
+  const icon = document.getElementById('rps_icon');
+  if (running) {
+    if (!handTimer) {
+      handTimer = setInterval(() => {
+        handFrame = (handFrame + 1) % HANDS.length;
+        icon.textContent = HANDS[handFrame];
+      }, 600);
+    }
+  } else {
+    if (handTimer) { clearInterval(handTimer); handTimer = null; }
+    icon.textContent = pending ? "⏳" : "✊";
+  }
+}
+
+async function refresh() {
+  try {
+    const res = await fetch('/status.json');
+    const data = await res.json();
+    const text = document.getElementById('status_text');
+
+    text.className = data.running ? 'on' : (data.setup_running ? 'pending' : 'off');
+    text.textContent = data.running
+      ? ('روشن (PID ' + data.pid + ')')
+      : (data.setup_running ? 'در حال نصب پیش‌نیازها...' : 'خاموش');
+
+    setRunningVisual(data.running, data.setup_running);
+
+    document.getElementById('uptime').textContent = data.uptime;
+    const logBox = document.getElementById('log');
+    const wasAtBottom = logBox.scrollTop + logBox.clientHeight >= logBox.scrollHeight - 20;
+    logBox.textContent = data.log.join('\n');
+    if (wasAtBottom) logBox.scrollTop = logBox.scrollHeight;
+  } catch (e) { /* ignore */ }
+}
+refresh();
+setInterval(refresh, 2500);
+</script>
+
+<script src="/static/pet-bg.js"></script>
+</body>
+</html>
