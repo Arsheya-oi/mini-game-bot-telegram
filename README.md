@@ -44,3 +44,62 @@ python rps_bot.py
 ## اجرای همیشگی (اختیاری)
 با بستن ترمینال، ربات خاموش می‌شه. برای روشن ماندن دائمی باید رو یه سرور/سرویس هاست
 (مثل یه VPS ارزون یا Railway/Render) اجراش کنی.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+این متن به انگلیسی:
+
+---
+
+**Rock-Paper-Scissors Group Bot (Inline mode — no need to add the bot to the group)**
+
+**1. Creating the bot and getting a token**
+
+1. In Telegram, go to [@BotFather](https://t.me/BotFather).
+2. Send `/newbot`, give it a name and a username (the username must end with `bot`).
+3. Copy the token it gives you and put it in `rps_bot.py` in place of `PUT-YOUR-TOKEN-HERE`.
+
+**2. Enabling Inline mode (very important!)**
+
+Still in the chat with BotFather:
+
+1. Type: `/setinline`
+2. Select your bot.
+3. Send a placeholder text, e.g.: `Start a Rock Paper Scissors game`
+
+Then:
+
+1. Type: `/setinlinefeedback`
+2. Select your bot.
+3. Choose the **Enabled (100%)** option.
+
+(This step is necessary because the code needs to know exactly when a game message has actually been sent, in order to register the first player.)
+
+**3. Installing requirements and running**
+
+```
+pip install -r requirements.txt
+python rps_bot.py
+```
+
+The bot stays active as long as this command is running.
+
+**4. How to play (without adding the bot to the group!)**
+
+1. In your friends' group, in the message input box, type:
+
+```
+@your_bot_username
+```
+
+(the username you chose when creating the bot)
+
+2. A small list appears above with an option "🎮 Start Rock Paper Scissors game."
+3. Tap it — a message with a "Accept Challenge" button gets sent to the group (as if you wrote it yourself).
+4. Someone else taps "Accept Challenge."
+5. Both players tap Rock/Paper/Scissors buttons (each only sees their own choice).
+6. The result is announced automatically in the same group message.
+
+Note: this method doesn't require the bot to be a member of the group or have any special permissions.
+
+**Running permanently (optional)**
+
+Closing the terminal will turn off the bot. To keep it running permanently, you need to run it on a server/hosting service (such as a cheap VPS or Railway/Render).
